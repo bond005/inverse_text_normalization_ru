@@ -143,7 +143,7 @@ def main():
                 transcriptions = []
                 for idx in trange(len(current_data)):
                     current_sample = current_data[idx]
-                    if current_sample['audio'] is not None:
+                    if (current_sample['audio'] is not None) and (current_sample['transcription'] is not None):
                         new_sound = current_sample['audio']['array']
                         if new_sound is not None:
                             if isinstance(new_sound, np.ndarray):
