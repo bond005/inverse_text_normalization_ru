@@ -126,7 +126,8 @@ def main():
     counter = 1
     with codecs.open(os.path.join(target_ds_name, 'metadata.csv'), mode='w', encoding='utf-8', buffering=0) as fp:
         data_writer = csv.writer(fp, delimiter=',', quotechar='"')
-        data_writer.writerow(['file_name', 'transcription', 'inv_normalized', 'uncertainty'])
+        data_writer.writerow(['file_name', 'transcription', 'inv_normalized_1', 'inv_normalized_2',
+                              'wer_based_uncertainty'])
         for cur_part in ds_parts:
             if cur_part in source_dataset:
                 print(f'\nThe {cur_part} part of the {os.path.basename(args.input_name)} dataset is processed.')
@@ -171,13 +172,16 @@ def main():
                                                              t5_config_for_restoring, t5_model_for_restoring)
                     predicted_with_meno = restore_text_with_meno(val, meno_tokenizer_for_restoring,
                                                                  meno_config_for_restoring, meno_model_for_restoring)
-                    wer1 = wer(predicted_with_t5, predicted_with_meno)
-                    wer2 = wer(predicted_with_meno, predicted_with_t5)
+                    uncertainty = max(
+                        wer(predicted_with_t5, predicted_with_meno),
+                        wer(predicted_with_meno, predicted_with_t5)
+                    )
                     samples.append((
-                        sounds[idx],
-                        val,
-                        min(1.0, max(wer1, wer2)),
-                        predicted_with_t5
+                        sounds[idx],         # 0
+                        val,                 # 1
+                        predicted_with_t5,   # 2
+                        predicted_with_meno, # 3
+                        uncertainty          # 4
                     ))
                     del predicted_with_t5, predicted_with_meno
                 del sounds, transcriptions
@@ -193,9 +197,11 @@ def main():
                     new_sound_name = 'data/{0}/sound{1:>06}.wav'.format(cur_part, counter)
                     new_sound_name_ = os.path.join(target_ds_name, 'data', cur_part, 'sound{0:>06}.wav'.format(counter))
                     counter += 1
-                    data_writer.writerow([new_sound_name, cur_sample[1], cur_sample[3], round(cur_sample[2], 4)])
+                    data_writer.writerow(
+                        [new_sound_name, cur_sample[1], cur_sample[2], cur_sample[3], round(cur_sample[4], 4)]
+                    )
                     write(new_sound_name_, rate=TARGET_SAMPLING_RATE, data=cur_sample[0])
-                    uncertainties.append(cur_sample[2])
+                    uncertainties.append(cur_sample[4])
                 uncertainties.sort()
                 info_msg = ('Uncertainties of the inverse normalization: minimal = {0:.4f}, maximal = {1:.4f}, '
                             'mean = {2:.4f}, median = {3:.4f}.').format(
