@@ -121,8 +121,10 @@ def main():
     ds_parts = ['train', 'validation', 'test']
     if os.path.isdir(os.path.join(target_ds_name, 'data')):
         shutil.rmtree(os.path.join(target_ds_name, 'data'))
-    else:
+    if not os.path.isdir(os.path.join(target_ds_name, 'data')):
         os.mkdir(os.path.join(target_ds_name, 'data'))
+    if not os.path.isdir(os.path.join(target_ds_name, 'data')):
+        raise IOError(f'The directory "{os.path.join(target_ds_name, "data")}" does not exist!')
     counter = 1
     with codecs.open(os.path.join(target_ds_name, 'metadata.csv'), mode='w', encoding='utf-8', buffering=0) as fp:
         data_writer = csv.writer(fp, delimiter=',', quotechar='"')
@@ -190,8 +192,10 @@ def main():
 
                 if os.path.isdir(os.path.join(target_ds_name, 'data', cur_part)):
                     shutil.rmtree(os.path.join(target_ds_name, 'data', cur_part))
-                else:
+                if not os.path.isdir(os.path.join(target_ds_name, 'data', cur_part)):
                     os.mkdir(os.path.join(target_ds_name, 'data', cur_part))
+                if not os.path.isdir(os.path.join(target_ds_name, 'data', cur_part)):
+                    raise IOError(f'The directory "{os.path.join(target_ds_name, "data", cur_part)}" does not exist!')
                 uncertainties = []
                 for cur_sample in samples:
                     new_sound_name = 'data/{0}/sound{1:>06}.wav'.format(cur_part, counter)
