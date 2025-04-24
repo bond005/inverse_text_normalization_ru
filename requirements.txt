@@ -2,6 +2,7 @@ datasets>=2.19.0
 jiwer
 librosa
 numpy
+pytorch-metric-learning
 scipy
 sentencepiece>=0.2.0
 soundfile
